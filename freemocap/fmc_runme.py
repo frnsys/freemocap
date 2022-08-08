@@ -362,17 +362,20 @@ def RunMe(sessionID=None,
 
 
 
-        play_skeleton_animation.PlaySkeletonAnimation(
-                                sesh,
-                                startFrame=sesh.startFrame,
-                                azimuth=-90,
-                                elevation=-81,
-                                useOpenPose=useOpenPose,
-                                useMediaPipe=useMediaPipe,
-                                useDLC=useDLC,
-                                recordVid = recordVid,
-                                showAnimation=showAnimation,
-                                )
+        try:
+            play_skeleton_animation.PlaySkeletonAnimation(
+                                    sesh,
+                                    startFrame=sesh.startFrame,
+                                    azimuth=-90,
+                                    elevation=-81,
+                                    useOpenPose=useOpenPose,
+                                    useMediaPipe=useMediaPipe,
+                                    useDLC=useDLC,
+                                    recordVid = recordVid,
+                                    showAnimation=showAnimation,
+                                    )
+        except:
+            console.print_exception()
         console.rule(style="color({})".format(thisStage))
     else:
         print('Skipping Skeleton Plotting')

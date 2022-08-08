@@ -1,15 +1,13 @@
-import threading
 import cv2
 import time
 import pickle
 import os
 import platform
 
-class CamRecordingThread(threading.Thread):
+class CamRecordingThread():
     def __init__(
         self, session, camID, unix_camID, camInput, videoName, rawVidPath, beginTime, parameterDictionary
     ):
-        threading.Thread.__init__(self)
         self.camID = camID
         self.unix_camID = unix_camID
         self.camInput = camInput
@@ -104,11 +102,10 @@ def CamRecording(
             break
         success, frame = cam.read()
 
-        
+
         cv2.imshow(camWindowName, frame)
         frame_sized = cv2.resize(frame, (resWidth, resHeight))
-        frame_sized = frame
-        out.write(frame)
+        out.write(frame_sized)
         timeStamps.append(time.time() - beginTime)  # add each timestamp to the list
         timeStamps_unix.append(time.time())
 

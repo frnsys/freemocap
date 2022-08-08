@@ -1,4 +1,3 @@
-import threading
 import cv2
 import imutils
 import os
@@ -7,13 +6,13 @@ import time
 
 import mediapipe as mp
 import numpy as np
-
+from multiprocessing import Process
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_holistic = mp.solutions.holistic
 
-class VideoSetup(threading.Thread):
+class VideoSetup():
     """
     Class to run and thread webcams for preview purposes
     """
@@ -21,7 +20,6 @@ class VideoSetup(threading.Thread):
         self.camID = camID
         self.parameterDictionary = parameterDictionary
         self.rotNum = rotNum
-        threading.Thread.__init__(self)
 
     def run(self):
         # print("Starting " + self.previewName)
@@ -39,11 +37,11 @@ class VideoSetup(threading.Thread):
         else:
             cap = cv2.VideoCapture(self.camID, cv2.CAP_ANY)
 
-
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, resWidth)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, resHeight)
         cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
-        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')) 
+        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
+        cap.set(cv2.CAP_PROP_FPS, 30) # TODO get from parameterDictionary?
 
         # showing values of the properties
         print("__________________________________________")
@@ -64,23 +62,23 @@ class VideoSetup(threading.Thread):
 
         while True:
             ret1, frame1 = cap.read()
-            charuco_corners, charuco_ids, aruco_square_corners, aruco_square_ids = detect_charuco_board(frame1)
-            annotate_image_with_charuco_data(frame1, charuco_corners, charuco_ids)
-            
+
             if ret1 == True:
+                charuco_corners, charuco_ids, aruco_square_corners, aruco_square_ids = detect_charuco_board(frame1)
+                annotate_image_with_charuco_data(frame1, charuco_corners, charuco_ids)
                 if rotNum is not None:
                     frame1 = imutils.rotate_bound(frame1, angle=rotNum)
-                
+
                 cv2.imshow(camWindowName, frame1)
                 if cv2.waitKey(1) & 0xFF == 27:
                     # == ord('q') for q
                     break
-
             else:
-                break
+                continue
+
         cv2.destroyWindow(camWindowName)
 
-class MediaPipeVideoSetup(threading.Thread):
+class MediaPipeVideoSetup():
     """
     Class to run and thread webcams for preview purposes
     """
@@ -88,7 +86,6 @@ class MediaPipeVideoSetup(threading.Thread):
         self.camID = camID
         self.parameterDictionary = parameterDictionary
         self.rotNum = rotNum
-        threading.Thread.__init__(self)
 
     def run(self):
         # print("Starting " + self.previewName)
@@ -211,8 +208,9 @@ def RunSetup(cam_inputs, rotation_input, paramDict,mediaPipeOverlay):
             u = MediaPipeVideoSetup(cam_input, paramDict, cam_rotation)
         else:
             u = VideoSetup(cam_input, paramDict, cam_rotation)
-        u.start()
-        ulist.append(u)
+        p = Process(target=u.run)
+        p.start()
+        ulist.append(p)
 
     for k in ulist:
         k.join()

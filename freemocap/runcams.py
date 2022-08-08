@@ -1,3 +1,4 @@
+from multiprocessing import Process
 from freemocap.webcam import startcamrecording, timesync, videotrim
 
 from pathlib import Path
@@ -49,7 +50,8 @@ def RecordCams(session,camInputs,parameterDictionary,rotationInputs):
             beginTime,
             parameterDictionary,
         )
-        camRecordings.start()
+        p = Process(target=camRecordings.run)
+        p.start()
 
         threads.append(camRecordings)
 
